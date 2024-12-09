@@ -4,6 +4,7 @@ import (
 	"Authors/config"
 	"Authors/controllers/authorcontroller"
 	"Authors/controllers/bookcontroller"
+	"Authors/controllers/collectioncontroller"
 	"Authors/controllers/homecontroller"
 	"log"
 	"net/http"
@@ -19,6 +20,7 @@ func main() {
 	http.HandleFunc("/books", bookcontroller.Index)
 	http.HandleFunc("/books/add", bookcontroller.Add)
 	http.HandleFunc("/books/edit", bookcontroller.Edit)
+	http.HandleFunc("/books/detail", bookcontroller.Detail)
 	http.HandleFunc("/books/delete", bookcontroller.Delete)
 
 	//3.Authors
@@ -26,6 +28,10 @@ func main() {
 	http.HandleFunc("/authors/add", authorcontroller.Add)
 	http.HandleFunc("/authors/edit", authorcontroller.Edit)
 	http.HandleFunc("/authors/delete", authorcontroller.Delete)
+
+	//4.Collection
+	http.HandleFunc("/collection", collectioncontroller.Index)
+	http.HandleFunc("/collection/Detail", collectioncontroller.Detail)
 
 	log.Println("Server running on port :8000")
 	http.ListenAndServe(":8000", nil)

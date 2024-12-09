@@ -11,7 +11,10 @@ func GetAll() []entities.Book {
 			books.id,
 			books.title,
 			authors.name as author_name,
-			books.genre
+			books.description,
+			books.genre,
+			books.updated_at,
+			books.added_at
 		FROM books
 		JOIN authors ON books.author_id = authors.id
 		`)
@@ -29,7 +32,10 @@ func GetAll() []entities.Book {
 			&book.Id,
 			&book.Title,
 			&book.Author.Name,
+			&book.Description,
 			&book.Genre,
+			&book.Updated_At,
+			&book.Added_At,
 		); err != nil {
 			panic(err)
 		}
@@ -41,9 +47,16 @@ func GetAll() []entities.Book {
 
 func Create(book entities.Book) bool {
 	result, err := config.DB.Exec(`
-	INSERT INTO books (title, authors, genre)
-	VALUE (?, ?, ?)`,
-		book.Title, book.Author, book.Genre,
+	INSERT INTO books (
+		title, author_id, genre, description, updated_at, added_at
+	)
+	VALUE (?, ?, ?, ?, ?, ?)`,
+		book.Title, 
+		book.Author.Id, 
+		book.Genre, 
+		book.Description, 
+		book.Updated_At, 
+		book.Added_At,
 	)
 	if err != nil {
 		panic(err)
@@ -56,17 +69,53 @@ func Create(book entities.Book) bool {
 }
 
 func Detail(id int) entities.Book {
-	row := config.DB.QueryRow(`SELECT id, title, authors, genre FROM books WHERE id = ?`, id)
+	row := config.DB.QueryRow(`
+		SELECT 
+			books.id,
+			books.title,
+			authors.name as author_name,
+			books.description,
+			books.genre,
+			books.updated_at,
+			books.added_at
+		FROM books
+		JOIN authors ON books.author_id = authors.id
+		WHERE books.id = ?
+	`, id)
 
 	var book entities.Book
-	if err := row.Scan(&book.Id, &book.Title, &book.Author, &book.Genre); err != nil {
-		panic(err.Error())
+
+	if err := row.Scan(
+		&book.Id,
+		&book.Title,
+		&book.Author.Name,
+		&book.Description,
+		&book.Genre,
+		&book.Updated_At,
+		&book.Added_At,
+	); err != nil {
+		panic(err)
 	}
+
 	return book
 }
 
 func Update(id int, book entities.Book) bool {
-	query, err := config.DB.Exec(`UPDATE books SET title = ?, authors = ?, genre = ? WHERE id = ?`, book.Title, book.Author, book.Genre, id)
+	query, err := config.DB.Exec(`
+	UPDATE books SET 
+		title = ?, 
+		author_id = ?, 
+		genre = ?,
+		description = ?,
+		updated_at = ? 
+	WHERE id = ?
+	`, 
+		book.Title, 
+		book.Author.Id, 
+		book.Genre, 
+		book.Description,
+		book.Updated_At,
+		id)
 	if err != nil {
 		panic(err)
 	}
