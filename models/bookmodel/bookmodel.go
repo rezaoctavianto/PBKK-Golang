@@ -52,7 +52,7 @@ func Create(book entities.Book) bool {
 	INSERT INTO books (
 		title, author_id, genre, description, release_date, updated_at, added_at
 	)
-	VALUE (?, ?, ?, ?, ?, ?)`,
+	VALUE (?, ?, ?, ?, ?, ?, ?)`,
 		book.Title, 
 		book.Author.Id, 
 		book.Genre, 

@@ -9,7 +9,7 @@
     /* General Reset */
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
+      font-family: Segoe UI;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -34,9 +34,6 @@
       <a class="navbar-brand text-light" href="/authors">Authors</a>
       <a class="navbar-brand text-light" href="/books">Books</a>
       <a class="navbar-brand text-light" href="/collections">Collection</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
     </div>
   </nav>
 
@@ -65,6 +62,8 @@
               <label class="form-label">Synopsis</label>
               <textarea class="form-control" name="description" rows="3">{{ .book.Description }}</textarea>
             </div>
+            <label class="form-label">Release Date</label>
+            <input type="text" class="form-control" name="release_date" autocomplete="off" value="{{ .book.Release_Date }}">
         </div>
         <div class="float end">
             <a href="/books" class="btn btn-secondary">Back</a>
