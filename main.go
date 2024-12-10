@@ -48,8 +48,6 @@ func main() {
 		collectionRoutes.GET("/detail", collectioncontroller.Detail)
 	}
 
-	router.Static("/images", "./images")
-
 	log.Println("Server running on port :8000")
 	router.Run(":8000")
 }
