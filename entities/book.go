@@ -8,6 +8,7 @@ type Book struct {
 	Author   Author
 	Genre    string
 	Description string
+	Release_Date string
 	Updated_At time.Time
 	Added_At time.Time
 }

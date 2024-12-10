@@ -11,8 +11,9 @@ func GetAll() []entities.Book {
 			books.id,
 			books.title,
 			authors.name as author_name,
-			books.description,
 			books.genre,
+			books.description,
+			books.release_date,
 			books.updated_at,
 			books.added_at
 		FROM books
@@ -32,8 +33,9 @@ func GetAll() []entities.Book {
 			&book.Id,
 			&book.Title,
 			&book.Author.Name,
-			&book.Description,
 			&book.Genre,
+			&book.Description,
+			&book.Release_Date,
 			&book.Updated_At,
 			&book.Added_At,
 		); err != nil {
@@ -48,13 +50,14 @@ func GetAll() []entities.Book {
 func Create(book entities.Book) bool {
 	result, err := config.DB.Exec(`
 	INSERT INTO books (
-		title, author_id, genre, description, updated_at, added_at
+		title, author_id, genre, description, release_date, updated_at, added_at
 	)
 	VALUE (?, ?, ?, ?, ?, ?)`,
 		book.Title, 
 		book.Author.Id, 
 		book.Genre, 
 		book.Description, 
+		book.Release_Date, 
 		book.Updated_At, 
 		book.Added_At,
 	)
@@ -74,8 +77,9 @@ func Detail(id int) entities.Book {
 			books.id,
 			books.title,
 			authors.name as author_name,
-			books.description,
 			books.genre,
+			books.description,
+			books.release_date,
 			books.updated_at,
 			books.added_at
 		FROM books
@@ -89,8 +93,9 @@ func Detail(id int) entities.Book {
 		&book.Id,
 		&book.Title,
 		&book.Author.Name,
-		&book.Description,
 		&book.Genre,
+		&book.Description,
+		&book.Release_Date,
 		&book.Updated_At,
 		&book.Added_At,
 	); err != nil {
@@ -107,6 +112,7 @@ func Update(id int, book entities.Book) bool {
 		author_id = ?, 
 		genre = ?,
 		description = ?,
+		release_date = ?,
 		updated_at = ? 
 	WHERE id = ?
 	`, 
@@ -114,6 +120,7 @@ func Update(id int, book entities.Book) bool {
 		book.Author.Id, 
 		book.Genre, 
 		book.Description,
+		book.Release_Date,
 		book.Updated_At,
 		id)
 	if err != nil {

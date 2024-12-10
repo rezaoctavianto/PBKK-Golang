@@ -21,16 +21,18 @@ CREATE TABLE books (
   author_id INT NOT NULL,
   genre VARCHAR(128),
   description TEXT,
+  release_date VARCHAR(128) NOT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE CASCADE
 );
 
-INSERT INTO books (title, author_id, genre, description) VALUES
-('To Kill a Mockingbird', 1, 'Fiction', 'A novel about the serious issues of race and rape in the 1930s American South.'),
-('1984', 2, 'Dystopian', 'A story about a totalitarian society governed by surveillance and propaganda.'),
-('The Great Gatsby', 3, 'Classic', 'A critique of the American Dream set in the 1920s.'),
-('Animal Farm', 2, 'Satire', 'A political allegory about the Russian Revolution.'),
-('Go Set a Watchman', 1, 'Fiction', 'A sequel to To Kill a Mockingbird, exploring racial tensions.');
+INSERT INTO books (title, author_id, genre, description, release_date) VALUES
+('Harry Potter and the Chamber of Secrets', 1, 'Fantasy', 'Harry returns to Hogwarts and faces the Chamber of Secrets.', '1998-07-02'),
+('Animal Farm', 2, 'Political Satire', 'A tale of farm animals rebelling against their human owner.', '1945-08-17'),
+('Go Set a Watchman', 3, 'Fiction', 'A sequel to To Kill a Mockingbird, set in the 1950s.', '2015-07-14'),
+('The Great Gatsby', 4, 'Classic', 'A critique of the American Dream set in the Jazz Age.', '1925-04-10'),
+('Pride and Prejudice', 5, 'Romance', 'A story of love and social standing in 19th-century England.', '1813-01-28');
+
 

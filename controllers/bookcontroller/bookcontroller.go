@@ -52,6 +52,7 @@ func Add(c *gin.Context) {
 		book.Author.Id = authorId
 		book.Genre = c.PostForm("genre")
 		book.Description = c.PostForm("description")
+		book.Release_Date = c.PostForm("release_date")
 		book.Updated_At = time.Now()
 		book.Added_At = time.Now()
 
@@ -106,6 +107,7 @@ func Edit(c *gin.Context) {
 		book.Author.Id = authorId
 		book.Genre = c.PostForm("genre")
 		book.Description = c.PostForm("description")
+		book.Release_Date = c.PostForm("release_date")
 		book.Updated_At = time.Now()
 
 		if ok := bookmodel.Update(id, book); !ok {

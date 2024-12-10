@@ -42,11 +42,7 @@ func main() {
 	}
 
 	//4.Collection
-	collectionRoutes := router.Group("/collection")
-	{
-		collectionRoutes.GET("", collectioncontroller.Index)
-		collectionRoutes.GET("/detail", collectioncontroller.Detail)
-	}
+	router.GET("/collections", collectioncontroller.Index)
 
 	log.Println("Server running on port :8000")
 	router.Run(":8000")
