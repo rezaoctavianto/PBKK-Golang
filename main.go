@@ -7,32 +7,49 @@ import (
 	"Authors/controllers/collectioncontroller"
 	"Authors/controllers/homecontroller"
 	"log"
-	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	config.ConnectDB()
 
+	router := gin.Default()
 	//1.Home
-	http.HandleFunc("/", homecontroller.Welcome)
+	router.GET("/", homecontroller.Welcome)
 
 	//2.Books
-	http.HandleFunc("/books", bookcontroller.Index)
-	http.HandleFunc("/books/add", bookcontroller.Add)
-	http.HandleFunc("/books/edit", bookcontroller.Edit)
-	http.HandleFunc("/books/detail", bookcontroller.Detail)
-	http.HandleFunc("/books/delete", bookcontroller.Delete)
+	bookRoutes := router.Group("/books")
+	{
+		bookRoutes.GET("", bookcontroller.Index)         // List books
+		bookRoutes.GET("/add", bookcontroller.Add)       // Add form
+		bookRoutes.POST("/add", bookcontroller.Add)      // Add submission
+		bookRoutes.GET("/edit", bookcontroller.Edit)     // Edit form
+		bookRoutes.POST("/edit", bookcontroller.Edit)    // Edit submission
+		bookRoutes.GET("/detail", bookcontroller.Detail) // View details
+		bookRoutes.GET("/delete", bookcontroller.Delete) // Delete book
+	}
 
 	//3.Authors
-	http.HandleFunc("/authors", authorcontroller.Index)
-	http.HandleFunc("/authors/add", authorcontroller.Add)
-	http.HandleFunc("/authors/edit", authorcontroller.Edit)
-	http.HandleFunc("/authors/delete", authorcontroller.Delete)
+	authorRoutes := router.Group("/authors")
+	{
+		authorRoutes.GET("", authorcontroller.Index)      // List authors
+		authorRoutes.GET("/add", authorcontroller.Add)    // Show add form
+		authorRoutes.POST("/add", authorcontroller.Add)   // Handle add form submission
+		authorRoutes.GET("/edit", authorcontroller.Edit)  // Show edit form
+		authorRoutes.POST("/edit", authorcontroller.Edit) // Handle edit form submission
+		authorRoutes.GET("/delete", authorcontroller.Delete)
+	}
 
 	//4.Collection
-	http.HandleFunc("/collection", collectioncontroller.Index)
-	http.HandleFunc("/collection/Detail", collectioncontroller.Detail)
+	collectionRoutes := router.Group("/collection")
+	{
+		collectionRoutes.GET("", collectioncontroller.Index)
+		collectionRoutes.GET("/detail", collectioncontroller.Detail)
+	}
+
+	router.Static("/images", "./images")
 
 	log.Println("Server running on port :8000")
-	http.ListenAndServe(":8000", nil)
+	router.Run(":8000")
 }

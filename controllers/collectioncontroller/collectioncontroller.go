@@ -1,11 +1,13 @@
 package collectioncontroller
 
-import "net/http"
+import (
+	"github.com/gin-gonic/gin"
+)
 
-func Index(w http.ResponseWriter, r *http.Request) {
+func Index(c *gin.Context) {
 
 }
 
-func Detail(w http.ResponseWriter, r *http.Request) {
+func Detail(c *gin.Context) {
 
 }

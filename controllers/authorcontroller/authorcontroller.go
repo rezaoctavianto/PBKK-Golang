@@ -6,32 +6,38 @@ import (
 	"net/http"
 	"strconv"
 	"text/template"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
+// Index displays a list of authors
+func Index(c *gin.Context) {
 	authors := authormodel.GetAll()
 	data := map[string]any{
 		"authors": authors,
 	}
 	temp, err := template.ParseFiles("views/author/index.html")
 	if err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
-	temp.Execute(w, data)
+	temp.Execute(c.Writer, data)
 }
 
-func Edit(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
+// Edit handles author editing
+func Edit(c *gin.Context) {
+	if c.Request.Method == "GET" {
 		temp, err := template.ParseFiles("views/author/edit.html")
 		if err != nil {
-			panic(err)
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
 		}
 
-		idString := r.URL.Query().Get("id")
+		idString := c.Query("id")
 		id, err := strconv.Atoi(idString)
-		
 		if err != nil {
-			panic(err)
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
 		}
 
 		author := authormodel.Detail(id)
@@ -39,60 +45,73 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 			"author": author,
 		}
 
-		temp.Execute(w, data)
+		temp.Execute(c.Writer, data)
+		return
 	}
 
-	if r.Method == "POST" {
+	if c.Request.Method == "POST" {
 		var author entities.Author
 
-		idString := r.FormValue("id")
+		idString := c.PostForm("id")
 		id, err := strconv.Atoi(idString)
 		if err != nil {
-			panic(err)
-		}
-		author.Name = r.FormValue("name")
-		author.DoB = r.FormValue("DoB")
-
-		if ok := authormodel.Update(id, author); !ok {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
 
-		http.Redirect(w, r, "/authors", http.StatusSeeOther)
+		author.Name = c.PostForm("name")
+		author.DoB = c.PostForm("DoB")
+
+		if ok := authormodel.Update(id, author); !ok {
+			c.Redirect(http.StatusSeeOther, c.Request.Referer())
+			return
+		}
+
+		c.Redirect(http.StatusSeeOther, "/authors")
 	}
 }
-func Add(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
+
+// Add handles adding new authors
+func Add(c *gin.Context) {
+	if c.Request.Method == "GET" {
 		temp, err := template.ParseFiles("views/author/create.html")
 		if err != nil {
-			panic(err)
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
 		}
-		temp.Execute(w, nil)
+		temp.Execute(c.Writer, nil)
+		return
 	}
-	if r.Method == "POST" {
+
+	if c.Request.Method == "POST" {
 		var author entities.Author
 
-		author.Name = r.FormValue("name")
-		author.DoB = r.FormValue("DoB")
+		author.Name = c.PostForm("name")
+		author.DoB = c.PostForm("DoB")
 
 		if ok := authormodel.Create(author); !ok {
 			temp, _ := template.ParseFiles("views/author/create.html")
-			temp.Execute(w, nil)
+			temp.Execute(c.Writer, nil)
+			return
 		}
 
-		http.Redirect(w, r, "/authors", http.StatusSeeOther)
+		c.Redirect(http.StatusSeeOther, "/authors")
 	}
 }
-func Delete(w http.ResponseWriter, r *http.Request) {
-	idString := r.URL.Query().Get("id")
+
+// Delete handles deleting an author
+func Delete(c *gin.Context) {
+	idString := c.Query("id")
 	id, err := strconv.Atoi(idString)
 	if err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
 
 	if err := authormodel.Delete(id); err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
-	http.Redirect(w, r, "/authors", http.StatusSeeOther)
+	c.Redirect(http.StatusSeeOther, "/authors")
 }

@@ -8,69 +8,73 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) {
+func Index(c *gin.Context) {
 	books := bookmodel.GetAll()
 	data := map[string]any{
 		"books": books,
 	}
 	temp, err := template.ParseFiles("views/book/view.html")
 	if err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
-	temp.Execute(w, data)
+	temp.Execute(c.Writer, data)
 }
 
-func Add(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
+func Add(c *gin.Context) {
+	if c.Request.Method == http.MethodGet {
 		temp, err := template.ParseFiles("views/book/create.html")
 		if err != nil {
-			panic(err)
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
 		}
-
 		authors := authormodel.GetAll()
 		data := map[string]any{
 			"authors": authors,
 		}
-
-		temp.Execute(w, data)
+		temp.Execute(c.Writer, data)
+		return
 	}
-	if r.Method == "POST" {
-		var book entities.Book
 
-		authorId, err := strconv.Atoi(r.FormValue("author_id"))
+	if c.Request.Method == http.MethodPost {
+		var book entities.Book
+		authorId, err := strconv.Atoi(c.PostForm("author_id"))
 		if err != nil {
-			panic(err)
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
 		}
 
-		book.Title = r.FormValue("title")
-		book.Author.Id = int(authorId)
-		book.Genre = r.FormValue("genre")
-		book.Description = r.FormValue("description")
+		book.Title = c.PostForm("title")
+		book.Author.Id = authorId
+		book.Genre = c.PostForm("genre")
+		book.Description = c.PostForm("description")
 		book.Updated_At = time.Now()
 		book.Added_At = time.Now()
 
 		if ok := bookmodel.Create(book); !ok {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusTemporaryRedirect)
+			c.Redirect(http.StatusTemporaryRedirect, c.Request.Referer())
 			return
 		}
-
-		http.Redirect(w, r, "/books", http.StatusSeeOther)
+		c.Redirect(http.StatusSeeOther, "/books")
 	}
 }
 
-func Edit(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
+func Edit(c *gin.Context) {
+	if c.Request.Method == http.MethodGet {
 		temp, err := template.ParseFiles("views/book/edit.html")
 		if err != nil {
-			panic(err)
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
 		}
 
-		idString := r.URL.Query().Get("id")
-		id, err := strconv.Atoi(idString)
+		id, err := strconv.Atoi(c.Query("id"))
 		if err != nil {
-			panic(err)
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
 		}
 
 		book := bookmodel.Detail(id)
@@ -79,44 +83,44 @@ func Edit(w http.ResponseWriter, r *http.Request) {
 			"authors": authors,
 			"book":    book,
 		}
-
-		temp.Execute(w, data)
+		temp.Execute(c.Writer, data)
+		return
 	}
 
-	if r.Method == "POST" {
+	if c.Request.Method == http.MethodPost {
 		var book entities.Book
 
-		idString := r.FormValue("id")
-		id, err := strconv.Atoi(idString)
+		id, err := strconv.Atoi(c.PostForm("id"))
 		if err != nil {
-			panic(err)
-		}
-
-		authorId, err := strconv.Atoi(r.FormValue("author_id"))
-		if err != nil {
-			panic(err)
-		}
-
-		book.Title = r.FormValue("title")
-		book.Author.Id = int(authorId)
-		book.Genre = r.FormValue("genre")
-		book.Description = r.FormValue("description")
-		book.Updated_At = time.Now()
-
-		if ok := bookmodel.Update(id, book); !ok {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusTemporaryRedirect)
+			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
 
-		http.Redirect(w, r, "/books", http.StatusSeeOther)
+		authorId, err := strconv.Atoi(c.PostForm("author_id"))
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		book.Title = c.PostForm("title")
+		book.Author.Id = authorId
+		book.Genre = c.PostForm("genre")
+		book.Description = c.PostForm("description")
+		book.Updated_At = time.Now()
+
+		if ok := bookmodel.Update(id, book); !ok {
+			c.Redirect(http.StatusTemporaryRedirect, c.Request.Referer())
+			return
+		}
+		c.Redirect(http.StatusSeeOther, "/books")
 	}
 }
 
-func Detail(w http.ResponseWriter, r *http.Request) {
-	idString := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idString)
+func Detail(c *gin.Context) {
+	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
 
 	book := bookmodel.Detail(id)
@@ -126,22 +130,23 @@ func Detail(w http.ResponseWriter, r *http.Request) {
 
 	temp, err := template.ParseFiles("views/book/detail.html")
 	if err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
-	temp.Execute(w, data)
+	temp.Execute(c.Writer, data)
 }
 
-func Delete(w http.ResponseWriter, r *http.Request) {
-	idString := r.URL.Query().Get("id")
-	id, err := strconv.Atoi(idString)
+func Delete(c *gin.Context) {
+	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
 
 	if err := bookmodel.Delete(id); err != nil {
-		panic(err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
-
-	http.Redirect(w, r, "/books", http.StatusSeeOther)
+	c.Redirect(http.StatusSeeOther, "/books")
 }
